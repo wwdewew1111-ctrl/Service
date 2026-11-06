@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FACEIT Card Generator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Oswald:wght@400;500;600;700&family=Unbounded:wght@700;800;900&display=swap" rel="stylesheet">
+<style>
+[hidden] { display: none !important; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #0a0a0c; font-family: 'Inter', sans-serif; color: #fff; -webkit-font-smoothing: antialiased; display: flex; flex-direction: column; align-items: center; padding: 20px; gap: 16px; }
+#card { position: relative; width: 850px; padding: 18px 22px 0; overflow: hidden; background: radial-gradient(ellipse 85% 380px at 50% -40px, rgba(255,26,43,0.30), transparent 70%), radial-gradient(ellipse 70% 260px at 50% 100%, rgba(255,26,43,0.14), transparent 70%), #0a0a0c; }
+#card::before { content: ""; position: absolute; inset: 0; pointer-events: none; background: repeating-linear-gradient(135deg, rgba(255,255,255,0.018) 0 2px, transparent 2px 14px); }
+#card > * { position: relative; z-index: 1; }
+.wm-row { display: flex; justify-content: space-between; font-size: 9px; font-weight: 600; letter-spacing: 2px; color: rgba(255,255,255,0.28); }
+.title { margin: 16px 0; text-align: center; font-family: 'Oswald', sans-serif; font-weight: 700; font-size: 48px; line-height: 1.1; text-transform: uppercase; letter-spacing: 1px; text-shadow: 0 0 28px rgba(255,26,43,0.45); }
+.title.long { font-size: 36px; } .title.xlong { font-size: 28px; }
+.lg { position: relative; flex: none; display: flex; align-items: center; justify-content: center; }
+.lg img { width: 100%; height: 100%; object-fit: contain; }
+.lg .ph { display: none; width: 100%; height: 100%; align-items: center; justify-content: center; font-family: 'Oswald', sans-serif; font-weight: 700; color: #ff1a2b; background: linear-gradient(135deg, #1a0508, #000); border: 1.5px solid #ff1a2b; border-radius: 22%; box-shadow: inset 0 0 14px rgba(255,26,43,0.35), 0 0 12px rgba(255,26,43,0.25); }
+.lg .ph.show, .lg.fail .ph { display: flex; }
+.board { background: #121216; border: 1px solid #2e1216; border-radius: 10px; overflow: hidden; }
+.board-top { display: grid; grid-template-columns: 200px 1fr 200px; justify-items: center; align-items: center; padding: 16px 34px; }
+.board-top > div { min-width: 0; }
+.board-top .lg { width: 150px; height: 150px; }
+.score { font-family: 'Oswald', sans-serif; font-weight: 700; font-size: 88px; line-height: 1; display: flex; align-items: center; gap: 20px; }
+.score .dash { font-size: 40px; color: #5a2a2f; font-weight: 500; }
+.score .win { color: #ff1a2b; text-shadow: 0 0 26px rgba(255,26,43,0.65); }
+.board-bot { display: grid; grid-template-columns: 200px 1fr 200px; justify-items: center; align-items: center; padding: 9px 34px; background: #0d0d10; border-top: 1px solid #2e1216; }
+.board-bot .name { font-family: 'Oswald', sans-serif; font-weight: 600; font-size: 20px; text-transform: uppercase; letter-spacing: 1px; white-space: nowrap; }
+.board-bot .bo { font-family: 'Oswald', sans-serif; font-size: 13px; letter-spacing: 3px; color: #ff1a2b; font-weight: 600; }
+.maps { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
+.map { background: #121216; border: 1px solid #2e1216; border-radius: 10px; overflow: hidden; }
+.map:last-child:nth-child(odd) { grid-column: 1 / -1; }
+.map-body { position: relative; display: flex; height: 112px; }
+.map-score { width: 46%; display: flex; align-items: center; justify-content: center; font-family: 'Oswald', sans-serif; font-weight: 700; font-size: 44px; letter-spacing: 1px; }
+.map-score .c { color: #ff1a2b; margin: 0 4px; } .map-score .dim { color: rgba(255,255,255,0.55); }
+.map-img { position: relative; flex: 1; background: linear-gradient(135deg, #2a0a0e, #0a0a0c); overflow: hidden; }
+.map-img img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.map-img::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, #121216 0%, rgba(18,18,22,0) 38%), linear-gradient(0deg, rgba(10,10,12,0.45), transparent 50%); }
+.map-win { position: absolute; right: 9px; bottom: 8px; z-index: 3; width: 30px; height: 30px; padding: 3px; border-radius: 50%; background: rgba(10,10,12,0.85); border: 1px solid #ff1a2b; box-shadow: 0 0 10px rgba(255,26,43,0.5); }
+.map-win .ph { font-size: 12px; }
+.map-foot { display: flex; align-items: center; padding: 8px 16px; background: #0d0d10; border-top: 1px solid #2e1216; font-size: 10px; font-weight: 700; letter-spacing: 2px; }
+.map-bar { height: 3px; background: linear-gradient(90deg, #ff1a2b, rgba(255,26,43,0.15)); }
+.tables { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
+.tbl { background: #121216; border: 1px solid #2e1216; border-radius: 10px; padding: 12px 14px 8px; }
+.tbl.win { border-color: #ff1a2b; box-shadow: 0 0 0 1px rgba(255,26,43,0.3), 0 0 24px rgba(255,26,43,0.18); }
+.tbl-head { display: flex; align-items: center; gap: 9px; margin-bottom: 10px; }
+.tbl-head .lg { width: 28px; height: 28px; }
+.tbl-head .ph { font-size: 13px; }
+.tbl-head .nm { font-family: 'Oswald', sans-serif; font-weight: 700; font-size: 19px; text-transform: uppercase; letter-spacing: 1px; line-height: 1.2; min-width: 0; }
+.row { display: grid; grid-template-columns: 1.5fr 1fr 0.95fr 0.8fr 0.8fr; align-items: center; font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.row > div { text-align: center; } .row > div:first-child { text-align: left; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; padding-right: 6px; }
+.row.h { font-size: 9px; letter-spacing: 1.5px; color: #8a6a6e; padding-bottom: 6px; border-bottom: 1px solid #2e1216; }
+.row.p { padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); } .row.p:last-child { border-bottom: none; }
+.rtg { font-weight: 800; } .rtg.good { color: #2ecc71; } .rtg.bad { color: #ff3344; }
+.footer { position: relative; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; margin-top: 12px; padding: 18px 0 20px; }
+.footer .left, .footer .right { font-size: 9px; font-weight: 700; letter-spacing: 2px; color: rgba(255,255,255,0.45); }
+.footer .right { text-align: right; }
+.footer .center { display: flex; align-items: center; gap: 12px; }
+.footer .center img { height: 38px; width: auto; display: block; filter: drop-shadow(0 0 8px rgba(255,26,43,0.6)); }
+.footer .center .div { width: 1px; height: 26px; background: #3a1a1e; }
+.footer .center .brand { font-family: 'Oswald', sans-serif; font-weight: 700; font-size: 21px; letter-spacing: 2px; }
+.footer .center .brand b { color: #ff1a2b; }
+.footer::after { content: ""; position: absolute; left: 50%; bottom: 0; transform: translateX(-50%); width: 170px; height: 5px; background: #ff1a2b; border-radius: 4px 4px 0 0; box-shadow: 0 0 16px rgba(255,26,43,0.8); }
+
+#card.player-mode { width: 850px; height: 850px; padding: 0; }
+#card.player-mode::before { display: none; }
+#card.theme-light { background: radial-gradient(circle at 80% 15%, #ffffff 0%, transparent 45%), radial-gradient(circle at 10% 90%, #e2e5ea 0%, transparent 50%), #f3f4f6; color: #141923; }
+#card.theme-dark { background: radial-gradient(circle at 30% 20%, #161d33, #060811 70%); color: #fff; }
+.pc { position: relative; width: 100%; height: 100%; }
+.corner { position: absolute; width: 16px; height: 16px; border: 0 solid currentColor; }
+.c-tl { top: 24px; left: 24px; border-top-width: 2px; border-left-width: 2px; }
+.c-tr { top: 24px; right: 24px; border-top-width: 2px; border-right-width: 2px; }
+.c-bl { bottom: 24px; left: 24px; border-bottom-width: 2px; border-left-width: 2px; }
+.c-br { bottom: 24px; right: 24px; border-bottom-width: 2px; border-right-width: 2px; }
+.p-vs { position: absolute; left: 0; right: 0; top: 50%; transform: translateY(-50%); text-align: center; font-family: 'Unbounded', sans-serif; font-weight: 900; font-size: 300px; line-height: 1; color: rgba(0,0,0,0.03); pointer-events: none; }
+.theme-dark .p-vs { color: rgba(255,255,255,0.03); }
+.p-title { position: absolute; top: 44px; left: 0; right: 0; text-align: center; font-family: 'Unbounded', sans-serif; font-weight: 900; font-size: 38px; line-height: 1.2; text-transform: uppercase; color: inherit; }
+.theme-dark .p-nick { color: #f4ff00; }
+.p-plash { position: absolute; left: 40px; top: 200px; width: 34px; height: 480px; background: #f4ff00; border-radius: 6px; display: flex; align-items: center; justify-content: center; }
+.p-plash span { writing-mode: vertical-rl; transform: rotate(180deg); font-family: 'Unbounded', sans-serif; font-weight: 700; font-size: 15px; color: #0a0c14; white-space: nowrap; }
+.p-stat { position: absolute; left: 96px; width: 230px; height: 170px; border-radius: 16px; background: linear-gradient(180deg, #07090f 0%, #1c2336 100%); display: flex; align-items: center; justify-content: center; padding-bottom: 18px; }
+.p-stat.s1 { top: 200px; } .p-stat.s2 { top: 386px; } .p-stat.s3 { top: 572px; }
+.p-val { font-family: 'Oswald', sans-serif; font-weight: 700; font-size: 86px; line-height: 1; color: #f4ff00; white-space: nowrap; }
+.p-val .dot { color: #fff; }
+.p-cap { position: absolute; left: 50%; bottom: -19px; transform: translateX(-50%); width: 180px; height: 38px; border-radius: 12px; background: #fff; color: #0a0c14; font-family: 'Unbounded', sans-serif; font-weight: 700; font-size: 15px; letter-spacing: 1px; display: flex; align-items: center; justify-content: center; }
+.p-photo { position: absolute; left: 462px; top: 140px; width: 340px; height: 540px; }
+.p-photo img { width: 100%; height: 100%; object-fit: contain; object-position: center bottom; -webkit-mask-image: linear-gradient(to bottom, #000 75%, transparent 100%); mask-image: linear-gradient(to bottom, #000 75%, transparent 100%); }
+.p-footer { position: absolute; left: 0; right: 0; bottom: 40px; display: flex; align-items: center; justify-content: center; gap: 12px; }
+.p-footer img { height: 38px; width: auto; display: block; }
+.p-div { width: 1px; height: 26px; background: currentColor; opacity: 0.3; }
+.p-brand { font-family: 'Unbounded', sans-serif; font-weight: 700; font-size: 18px; letter-spacing: 1px; }
+.p-bar { position: absolute; left: 305px; bottom: 0; width: 240px; height: 14px; background: #f4ff00; }
+
+.tabs { display: flex; gap: 8px; width: 850px; max-width: 100%; }
+.tab { flex: 1; height: 44px; border-radius: 8px; border: 1px solid #2e1216; background: #121216; color: #fff; font: 600 14px 'Inter', sans-serif; cursor: pointer; transition: background .2s, border-color .2s; }
+.tab:hover { border-color: #ff1a2b; }
+.tab.active { background: #ff1a2b; border-color: #ff1a2b; }
+.bar { width: 850px; max-width: 100%; display: flex; flex-direction: column; gap: 12px; }
+.panel { display: flex; flex-direction: column; gap: 8px; }
+.line { display: flex; gap: 8px; flex-wrap: wrap; }
+.team-edit { display: flex; gap: 8px; flex: 1 1 320px; min-width: 0; }
+.field { flex: 1; min-width: 0; height: 44px; padding: 0 14px; background: #121216; border: 1px solid #2e1216; border-radius: 8px; color: #fff; font: 500 14px 'Inter', sans-serif; outline: none; transition: border-color .2s; }
+.field::placeholder { color: #8a6a6e; }
+.field:focus { border-color: #ff1a2b; }
+.field.sel { flex: 0 0 200px; }
+.field.area { height: auto; min-height: 140px; padding: 12px 14px; resize: vertical; }
+.btn { height: 44px; padding: 0 18px; border-radius: 8px; border: 1px solid #2e1216; background: #121216; color: #fff; font: 600 14px 'Inter', sans-serif; cursor: pointer; white-space: nowrap; transition: background .2s, border-color .2s, opacity .2s; }
+.btn:hover:not(:disabled) { border-color: #ff1a2b; }
+.btn:disabled { opacity: .4; cursor: not-allowed; }
+.btn.primary { background: #ff1a2b; border-color: #ff1a2b; }
+.btn.primary:hover:not(:disabled) { background: #e6101f; }
+.bar-actions { display: flex; gap: 8px; }
+.status { min-height: 20px; font: 500 14px 'Inter', sans-serif; color: #d4d7dc; }
+.status.error { color: #ff6b75; }
+
+#seasonResults { display: flex; flex-direction: column; gap: 24px; align-items: center; }
+.season-item { display: flex; flex-direction: column; gap: 8px; width: 850px; max-width: 100%; }
+.season-card { width: 100%; background: #0d0f14; color: #fff; padding: 24px; border: 1px solid #2e1216; border-radius: 10px; }
+.sc-head { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; }
+.sc-logo { width: 56px; height: 56px; }
+.sc-logo .ph { font-size: 20px; }
+.sc-team { font: 600 11px 'Inter', sans-serif; letter-spacing: 2px; color: #8a6a6e; text-transform: uppercase; }
+.sc-head h2 { font: 700 26px/1.2 'Oswald', sans-serif; text-transform: uppercase; letter-spacing: 1px; }
+.season-card table { width: 100%; border-collapse: collapse; font-size: 12px; font-variant-numeric: tabular-nums; }
+.season-card th { font-size: 9px; letter-spacing: 1px; color: #8a6a6e; font-weight: 600; text-align: center; padding: 6px 4px; border-bottom: 1px solid #2e1216; }
+.season-card td { text-align: center; padding: 8px 4px; border-bottom: 1px solid rgba(255,255,255,0.05); font-weight: 600; }
+.season-card th:first-child, .season-card td:first-child { text-align: left; white-space: nowrap; }
+</style>
+</head>
+<body>
+<div class="tabs">
+  <button class="tab active" data-mode="match">Карточка матча</button>
+  <button class="tab" data-mode="player">Карточка игрока</button>
+  <button class="tab" data-mode="season">Итоги сезона</button>
+</div>
+
+<div id="bar" class="bar">
+  <div id="matchPanel" class="panel">
+    <div class="line">
+      <input id="input" class="field" type="text" autocomplete="off" placeholder="https://www.faceit.com/en/cs2/room/1-xxxxxxxx-... Мой Турнир">
+      <button id="create" class="btn primary">Создать</button>
+    </div>
+    <div id="teamLogos" class="line"></div>
+  </div>
+
+  <div id="playerPanel" class="panel" hidden>
+    <div class="line">
+      <input id="pMatch" class="field" type="text" autocomplete="off" placeholder="Ссылка на матч FACEIT (faceit.com/.../room/1-...)">
+      <select id="pMap" class="field sel" hidden><option value="all">Вся серия</option></select>
+    </div>
+    <input id="pPlayer" class="field" type="text" autocomplete="off" placeholder="Ссылка на профиль игрока (faceit.com/.../players/НИК)">
+    <div class="line">
+      <input id="pNick" class="field" type="text" autocomplete="off" placeholder="Отображаемый ник (необязательно)">
+      <select id="pTheme" class="field sel">
+        <option value="light">Белая тема</option>
+        <option value="dark">Тёмная тема</option>
+      </select>
+    </div>
+    <div class="line">
+      <button id="pPhotoBtn" class="btn">Загрузить фото игрока</button>
+      <input id="pPhotoFile" type="file" accept="image/*" hidden>
+      <input id="pPhotoUrl" class="field" type="text" autocomplete="off" placeholder="Ссылка на фото или вставьте картинку через Ctrl+V">
+      <button id="pCreate" class="btn primary">Создать</button>
+    </div>
+  </div>
+
+  <div class="bar-actions">
+    <button id="logoBtn" class="btn">Лого подвала</button>
+    <input id="logoFile" type="file" accept="image/png" hidden>
+    <button id="dl" class="btn" disabled>Скачать PNG</button>
+    <button id="cp" class="btn" disabled>Скопировать картинку</button>
+  </div>
+  <div id="status" class="status"></div>
+</div>
+
+<div id="card" hidden></div>
+
+<section id="seasonPanel" class="bar" hidden>
+  <textarea id="seasonLinks" class="field area" autocomplete="off" placeholder="Ссылки на матчи FACEIT, по одной в строке (до 25)"></textarea>
+  <div class="line">
+    <button id="seasonRun" class="btn primary">Собрать итоги сезона</button>
+    <button id="seasonLogoBtn" class="btn">Логотип команды</button>
+    <input id="seasonLogoFile" type="file" accept="image/*" hidden>
+  </div>
+  <div id="seasonStatus" class="status"></div>
+  <div id="seasonResults"></div>
+</section>
+
+<input id="teamLogoFile" type="file" accept="image/*" hidden>
+
+<script type="module" src="/src/main.js"></script>
+</body>
+</html>
